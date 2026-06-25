@@ -12,9 +12,9 @@ A curated dataset of song lyrics from the **Billboard Year-End Hot 100** chart, 
 | **Source** | Billboard Year-End Hot 100 + Genius API |
 | **Format** | CSV (one file per year) |
 
-## Dataset Structure
+## Files
 
-Each file follows the naming convention `billboard-year-end-YYYY-lyrics.csv` and contains the following columns:
+### Lyrics — `billboard-year-end-YYYY-lyrics.csv` (one per year)
 
 | Column | Type | Description |
 |---|---|---|
@@ -23,19 +23,35 @@ Each file follows the naming convention `billboard-year-end-YYYY-lyrics.csv` and
 | `Artista` | string | Artist name |
 | `Letra` | string | Full song lyrics (retrieved via Genius API) |
 
+### Thematic enrichment results — `rq4_theme_distribution_by_year_model.csv`
+
+Aggregated thematic distribution by year and LLM, used in the temporal analysis (RQ4) of the related publication. Covers 2000–2023 across five models (ChatGPT, Gemini, DeepSeek, Mistral, Claude).
+
+| Column | Type | Description |
+|---|---|---|
+| `model_group` | string | LLM name (e.g., `ChatGPT`, `Gemini`) |
+| `year` | integer | Billboard chart year |
+| `normalized_theme` | string | Thematic category from the fixed taxonomy |
+| `count` | integer | Number of songs assigned to this theme |
+| `year_total_real` | integer | Total songs processed for that year |
+| `percentage` | float | Proportion of songs in this theme (%) |
+
 ## Usage
 
 ```python
 import pandas as pd
 import glob
 
-# Load all years
+# Load all lyrics
 files = sorted(glob.glob("billboard-year-end-*-lyrics.csv"))
 df = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
 
 # Load a single year
 df_2023 = pd.read_csv("billboard-year-end-2023-lyrics.csv")
-print(df_2023.head())
+
+# Load thematic enrichment results
+df_themes = pd.read_csv("rq4_theme_distribution_by_year_model.csv")
+df_themes[df_themes.model_group == "Claude"].pivot(index="year", columns="normalized_theme", values="percentage")
 ```
 
 ## Related Publication
